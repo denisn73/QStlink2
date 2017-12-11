@@ -452,6 +452,12 @@ bool MainWindow::getMCU()
     mStlink->resetMCU();
     mStlink->getChipID();
 
+    this->log("CoreID: " + mStlink->mCoreId);
+    this->log("ChipID: " + mStlink->mChipId);
+	
+	// !!! Если ID - 0, считаем что это STM32F103
+	if(mStlink->mChipId != F1_MEDIUM) mStlink->mChipId = F1_MEDIUM;
+
     if (mDevices->search(mStlink->mChipId)) {
         mStlink->mDevice = mDevices->mCurDevice;
         qInfo() << "Device type: " << mStlink->mDevice->mType;
@@ -474,6 +480,12 @@ bool MainWindow::getMCU()
         mUi->le_flashsize->setText(QString::number(mStlink->mDevice->value("flash_size"))+"KB");
 
         return true;
+    }
+    // !!! Если ID - 0, считаем что это STM32F103
+    else {
+        //this->log("MDR32 test");
+
+        //return true;
     }
     this->log("Device not found in database!");
     qCritical("Device not found in database!");

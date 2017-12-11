@@ -138,6 +138,7 @@ bool DeviceInfoList::IsLoaded() const {
     return mLoaded;
 }
 
+//if (mDevices->search(mStlink->mChipId))
 bool DeviceInfoList::search(const quint32 chip_id) {
     qDebug("Looking for: 0x%03X", chip_id);
     for (int i=0; i < mDevices.count(); i++) {
