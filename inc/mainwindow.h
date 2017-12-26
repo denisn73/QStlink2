@@ -30,6 +30,20 @@ This file is part of QSTLink2.
 #include "transferthread.h"
 #include "compat.h"
 
+// Baud rate divisors for SWDCLK
+#define STLINK_SWDCLK_4MHZ_DIVISOR		0
+#define STLINK_SWDCLK_1P8MHZ_DIVISOR	1
+//#define STLINK_SWDCLK_1P2MHZ_DIVISOR	2
+#define STLINK_SWDCLK_950KHZ_DIVISOR	3
+#define STLINK_SWDCLK_480KHZ_DIVISOR	7
+#define STLINK_SWDCLK_240KHZ_DIVISOR	15
+#define STLINK_SWDCLK_125KHZ_DIVISOR	31
+#define STLINK_SWDCLK_100KHZ_DIVISOR	40
+#define STLINK_SWDCLK_50KHZ_DIVISOR		79
+#define STLINK_SWDCLK_25KHZ_DIVISOR		158
+#define STLINK_SWDCLK_15KHZ_DIVISOR		265
+#define STLINK_SWDCLK_5KHZ_DIVISOR		798
+
 namespace Ui {
     class MainWindow;
 }
@@ -52,6 +66,8 @@ class MainWindow : public QMainWindow
         ACTION_RECEIVE = 2,
         ACTION_VERIFY = 3
     };
+
+    int sw_clock = 3; // STLINK_SWDCLK_480KHZ_DIVISOR
 
 public:
     /**
@@ -237,6 +253,8 @@ private slots:
      */
     void quit();
 
+    void on_r_clock_currentIndexChanged(int index);
+    void setClockSWD(int divisor);
 };
 
 #endif // MAINWINDOW_H

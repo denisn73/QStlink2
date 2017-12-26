@@ -29,6 +29,8 @@ MainWindow::MainWindow(QWidget *parent) :
     mDevices = new DeviceInfoList(this);
     mTfThread = new transferThread();
 
+    mUi->r_clock->setCurrentIndex(sw_clock);
+
     mLastAction = ACTION_NONE;
 
     if (mDevices->IsLoaded()) {
@@ -365,22 +367,29 @@ void MainWindow::hardReset()
 
 void MainWindow::setModeJTAG()
 {
-    if (!mStlink->isConnected())
-        return;
+    if (!mStlink->isConnected()) return;
     this->log("Changing mode to JTAG...");
     mStlink->setModeJTAG();
     QThread::msleep(100);
     this->getMode();
 }
 
+void MainWindow::setClockSWD(int divisor)
+{
+    if (!mStlink->isConnected()) return;
+    this->log("Changing SWD clock divisor...");
+    mStlink->setClockSWD(divisor);
+    QThread::msleep(100);
+}
+
 void MainWindow::setModeSWD()
 {
-    if (!mStlink->isConnected())
-        return;
+    if (!mStlink->isConnected()) return;
     this->log("Changing mode to SWD...");
     mStlink->setModeSWD();
     QThread::msleep(100);
     this->getMode();
+    this->setClockSWD(sw_clock);
 }
 
 void MainWindow::quit()
@@ -452,12 +461,6 @@ bool MainWindow::getMCU()
     mStlink->resetMCU();
     mStlink->getChipID();
 
-    this->log("CoreID: " + mStlink->mCoreId);
-    this->log("ChipID: " + mStlink->mChipId);
-	
-	// !!! Если ID - 0, считаем что это STM32F103
-	if(mStlink->mChipId != F1_MEDIUM) mStlink->mChipId = F1_MEDIUM;
-
     if (mDevices->search(mStlink->mChipId)) {
         mStlink->mDevice = mDevices->mCurDevice;
         qInfo() << "Device type: " << mStlink->mDevice->mType;
@@ -490,4 +493,23 @@ bool MainWindow::getMCU()
     this->log("Device not found in database!");
     qCritical("Device not found in database!");
     return false;
+}
+
+void MainWindow::on_r_clock_currentIndexChanged(int index)
+{
+    switch(index) {
+        case 0  : sw_clock = STLINK_SWDCLK_4MHZ_DIVISOR;   break;
+        case 1  : sw_clock = STLINK_SWDCLK_1P8MHZ_DIVISOR; break;
+        case 2  : sw_clock = STLINK_SWDCLK_950KHZ_DIVISOR; break;
+        case 3  : sw_clock = STLINK_SWDCLK_480KHZ_DIVISOR; break;
+        case 4  : sw_clock = STLINK_SWDCLK_240KHZ_DIVISOR; break;
+        case 5  : sw_clock = STLINK_SWDCLK_125KHZ_DIVISOR; break;
+        case 6  : sw_clock = STLINK_SWDCLK_100KHZ_DIVISOR; break;
+        case 7  : sw_clock = STLINK_SWDCLK_50KHZ_DIVISOR;  break;
+        case 8  : sw_clock = STLINK_SWDCLK_25KHZ_DIVISOR;  break;
+        case 9  : sw_clock = STLINK_SWDCLK_15KHZ_DIVISOR;  break;
+        case 10 : sw_clock = STLINK_SWDCLK_5KHZ_DIVISOR;   break;
+        default: break;
+    }
+    this->setClockSWD(sw_clock);
 }

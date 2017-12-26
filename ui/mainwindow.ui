@@ -538,6 +538,65 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QComboBox" name="r_clock">
+        <item>
+         <property name="text">
+          <string>4,0 Mhz</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>1,8 MHz</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>0,9 MHz</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>480 Khz</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>240 Khz</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>125 Khz</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>100 Khz</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>050 Khz</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>025 Khz</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>015 Khz</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>005 Khz</string>
+         </property>
+        </item>
+       </widget>
+      </item>
      </layout>
     </item>
    </layout>

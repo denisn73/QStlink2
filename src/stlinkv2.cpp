@@ -270,6 +270,16 @@ void stlinkv2::setModeSWD()
       this->debugCommand(&buf, STLink::Cmd::DbgV2::Enter, STLink::Cmd::Dbg::EnterSWD, 2);
 }
 
+void stlinkv2::setClockSWD(uint16_t clk_divisor)
+{
+    PrintFuncName();
+    QByteArray buf;
+    this->setExitModeDFU();
+    if (mVersion.api > 1) {
+        this->debugCommandCLock(&buf, STLink::Cmd::DbgV2::SetFreqSWD, (quint8)(clk_divisor & 0xFF), (quint8)((clk_divisor >> 8) & 0xFF), 2);
+    }
+}
+
 void stlinkv2::setExitModeDFU()
 {
     PrintFuncName();
@@ -647,6 +657,31 @@ qint32 stlinkv2::debugCommand(QByteArray* buf, quint8 st_cmd1, quint8 st_cmd2, q
 
     if (resp_len > 0)
     {
+        return mUsbDevice->read(buf, resp_len);
+    }
+    return res;
+}
+
+qint32 stlinkv2::debugCommandCLock(QByteArray* buf, quint8 st_cmd1, quint8 st_cmd2, quint8 st_cmd3, quint32 resp_len)
+{
+    Q_CHECK_PTR(buf);
+    QByteArray cmd;
+    cmd.append(STLink::Cmd::DebugCommand);
+    cmd.append(st_cmd1);
+    if (mVersion.api == 1) {
+      cmd.append(st_cmd2);
+      cmd.append(st_cmd3);
+    }
+    else {
+      if (st_cmd2 != 0)
+        cmd.append(st_cmd2);
+      if (st_cmd3 != 0)
+        cmd.append(st_cmd3);
+    }
+
+    qint32 res = this->sendCommand(cmd);
+
+    if (resp_len > 0) {
         return mUsbDevice->read(buf, resp_len);
     }
     return res;

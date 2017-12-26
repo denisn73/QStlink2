@@ -95,6 +95,7 @@ namespace STLink {
       const quint8 ReadDbgReg = 0x36; /**< TODO: describe */
       const quint8 ReadAllRegs = 0x3A; /**< All registers fetched at once */
       const quint8 HardReset = 0x3C; /**< NRST pull down */
+      const quint8 SetFreqSWD = 0x43; /**< TODO: describe */
     }
   }
 }
@@ -318,6 +319,11 @@ public slots:
      * @brief
      *
      */
+    void setClockSWD(uint16_t clk_divisor);
+    /**
+     * @brief
+     *
+     */
     void setExitModeDFU();
     /**
      * @brief
@@ -532,6 +538,16 @@ private:
      * @return qint32
      */
     qint32 debugCommand(QByteArray* buf, quint8 st_cmd1, quint8 st_cmd2, quint32 resp_len);
+    /**
+     * @brief
+     *
+     * @param buf
+     * @param st_cmd1
+     * @param st_cmd2
+     * @param resp_len
+     * @return qint32
+     */
+    qint32 debugCommandCLock(QByteArray* buf, quint8 st_cmd1, quint8 st_cmd2, quint8 st_cmd3, quint32 resp_len);
     /**
      * @brief
      *
