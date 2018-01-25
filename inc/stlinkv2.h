@@ -290,6 +290,10 @@ public slots:
      *
      */
     void hardResetMCU();
+
+    uint32_t readMDR_EEPROM_CMD();
+    uint32_t readMDR_EEPROM_KEY();
+    void writeMDR_EEPROM_KEY();
     /**
      * @brief
      *
@@ -547,6 +551,12 @@ private:
      * @param resp_len
      * @return qint32
      */
+
+    quint32 readMDR_CMD();
+    quint32 readMDR_KEY();
+    void writeMDR_KEY();
+
+
     qint32 debugCommandCLock(QByteArray* buf, quint8 st_cmd1, quint8 st_cmd2, quint8 st_cmd3, quint32 resp_len);
     /**
      * @brief

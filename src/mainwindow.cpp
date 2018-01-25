@@ -363,6 +363,10 @@ void MainWindow::hardReset()
     mStlink->hardResetMCU();
     QThread::msleep(100);
     this->getStatus();
+    this->log("readMDR_CMD: " + QString::number(mStlink->readMDR_EEPROM_CMD()));
+    mStlink->writeMDR_EEPROM_KEY();
+    this->log("readMDR_KEY: " + QString::number(mStlink->readMDR_EEPROM_KEY()));
+
 }
 
 void MainWindow::setModeJTAG()

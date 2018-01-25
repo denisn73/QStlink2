@@ -236,8 +236,12 @@ quint32 stlinkv2::readFlashSize()
     PrintFuncName();
     QByteArray buf;
 
-    this->readMem32(&buf, mDevice->value("flash_size_reg"));
-    mDevice->insert("flash_size", qFromLittleEndian<quint32>((uchar*)buf.data()));
+    if(mDevice->value("flash_size_reg") == 0) {
+        mDevice->insert("flash_size", 0x80);
+    } else {
+        this->readMem32(&buf, mDevice->value("flash_size_reg"));
+        mDevice->insert("flash_size", qFromLittleEndian<quint32>((uchar*)buf.data()));
+    }
     if (mChipId == STM32::ChipID::F4 || mChipId == STM32::ChipID::F4_HD) {
         mDevice->insert("flash_size", mDevice->value("flash_size") >> 16);
     }
@@ -280,6 +284,8 @@ void stlinkv2::setClockSWD(uint16_t clk_divisor)
     }
 }
 
+
+
 void stlinkv2::setExitModeDFU()
 {
     PrintFuncName();
@@ -304,6 +310,18 @@ void stlinkv2::hardResetMCU()
     QByteArray buf;
     this->command(&buf, STLink::Cmd::Reset, 0, 8);
     this->debugCommand(&buf, STLink::Cmd::DbgV2::HardReset, 0x02, 2);
+}
+
+uint32_t stlinkv2::readMDR_EEPROM_CMD() {
+    return readMDR_CMD();
+}
+
+uint32_t stlinkv2::readMDR_EEPROM_KEY() {
+    return readMDR_KEY();
+}
+
+void stlinkv2::writeMDR_EEPROM_KEY() {
+    return writeMDR_KEY();
 }
 
 void stlinkv2::runMCU()
@@ -466,6 +484,39 @@ quint32 stlinkv2::readFlashSR()
     res =  qFromLittleEndian<quint32>((const uchar*)buf.data());
     qDebug() << "Flash status register: 0x"+QString::number(res, 16) << regPrint(res);
     return res;
+}
+
+quint32 stlinkv2::readMDR_CMD()
+{
+    PrintFuncName();
+    quint32 res;
+    QByteArray buf;
+
+    readMem32(&buf, mDevice->value("CNTRL_CMD"), sizeof(quint32));
+    res =  qFromLittleEndian<quint32>((const uchar*)buf.data());
+    qDebug() << "readMDR_CMD:" << "0x"+QString::number(res, 16) << regPrint(res);
+    return res;
+}
+
+quint32 stlinkv2::readMDR_KEY()
+{
+    PrintFuncName();
+    quint32 res;
+    QByteArray buf;
+    readMem32(&buf, mDevice->value("CNTRL_KEY"), sizeof(quint32));
+    res =  qFromLittleEndian<quint32>((const uchar*)buf.data());
+    qDebug() << "readMDR_KEY:" << "0x"+QString::number(res, 16) << regPrint(res);
+    return res;
+}
+
+void stlinkv2::writeMDR_KEY() {
+    PrintFuncName();
+    QByteArray buf;
+    uchar endian_buf[4];
+    const quint32 addr = mDevice->value("CNTRL_KEY");
+    qToLittleEndian(mDevice->value("EEPROM_KEY"), endian_buf);
+    buf.append((const char*)endian_buf, sizeof(endian_buf));
+    this->writeMem32(addr,  buf);
 }
 
 quint32 stlinkv2::readFlashCR()

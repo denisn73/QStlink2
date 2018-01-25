@@ -53,6 +53,34 @@
 
   <devices>
 
+    <device type="MDR32F9x" coretype="CM3">
+      <core_id>0x1ba01477</core_id>
+      <chip_id>0x0</chip_id>
+      <flash_size_reg>0x0</flash_size_reg>
+      <flash_int_reg>0x40022000</flash_int_reg>
+      <buffer_size>0x4000</buffer_size>
+      <loader>loader_f1.bin</loader>
+      <EEPROM_CNTRL>0x40018000</EEPROM_CNTRL>
+      <EEPROM_KEY>0x08AAA5551</EEPROM_KEY>
+      <CNTRL_CMD>0x40018000</CNTRL_CMD>
+      <CNTRL_ADR>0x40018004</CNTRL_ADR>
+      <CNTRL_DI>0x40018008</CNTRL_DI>
+      <CNTRL_DO>0x4001800C</CNTRL_DO>
+      <CNTRL_KEY>0x40018010</CNTRL_KEY>
+      <CMD_NVSTR>0x2000</CMD_NVSTR>
+      <CMD_PROG>0x1000</CMD_PROG>
+      <CMD_MAS1>0x800</CMD_MAS1>
+      <CMD_ERASE>0x400</CMD_ERASE>
+      <CMD_IFREN>0x200</CMD_IFREN>
+      <CMD_SE>0x100</CMD_SE>
+      <CMD_YE>0x80</CMD_YE>
+      <CMD_XE>0x40</CMD_XE>
+      <CMD_DELAY>0x8</CMD_DELAY>
+      <CMD_RD>0x4</CMD_RD>
+      <CMD_WR>0x2</CMD_WR>
+      <CMD_CON>0x0</CMD_CON>
+    </device>
+
     <device type="STM32L03xx" coretype="CM0+">
       <core_id>0x0bb11477</core_id>
       <chip_id>0x425</chip_id>
