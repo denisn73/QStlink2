@@ -82,6 +82,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="b_test">
+          <property name="text">
+           <string>test</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="b_repeat">
           <property name="enabled">
            <bool>true</bool>

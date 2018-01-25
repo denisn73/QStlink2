@@ -312,17 +312,31 @@ void stlinkv2::hardResetMCU()
     this->debugCommand(&buf, STLink::Cmd::DbgV2::HardReset, 0x02, 2);
 }
 
-uint32_t stlinkv2::readMDR_EEPROM_CMD() {
+quint32 stlinkv2::readMDR_EEPROM_CMD() {
     return readMDR_CMD();
 }
 
-uint32_t stlinkv2::readMDR_EEPROM_KEY() {
+quint32 stlinkv2::readMDR_EEPROM_KEY() {
     return readMDR_KEY();
+}
+
+void stlinkv2::writeMDR_EEPROM_CMD(quint32 value) {
+    return writeMDR_CMD(value);
+}
+
+void stlinkv2::writeMDR_EEPROM_ADR(quint32 value) {
+    return writeMDR_ADR(value);
+}
+
+void stlinkv2::writeMDR_EEPROM_DI(quint32 value) {
+    return writeMDR_DI(value);
 }
 
 void stlinkv2::writeMDR_EEPROM_KEY() {
     return writeMDR_KEY();
 }
+
+
 
 void stlinkv2::runMCU()
 {
@@ -488,7 +502,7 @@ quint32 stlinkv2::readFlashSR()
 
 quint32 stlinkv2::readMDR_CMD()
 {
-    PrintFuncName();
+    //PrintFuncName();
     quint32 res;
     QByteArray buf;
 
@@ -496,6 +510,39 @@ quint32 stlinkv2::readMDR_CMD()
     res =  qFromLittleEndian<quint32>((const uchar*)buf.data());
     qDebug() << "readMDR_CMD:" << "0x"+QString::number(res, 16) << regPrint(res);
     return res;
+}
+
+void stlinkv2::writeMDR_CMD(quint32 value)
+{
+    PrintFuncName();
+    QByteArray buf;
+    uchar endian_buf[4];
+    const quint32 addr = mDevice->value("CNTRL_CMD");
+    qToLittleEndian(value, endian_buf);
+    buf.append((const char*)endian_buf, sizeof(endian_buf));
+    this->writeMem32(addr,  buf);
+}
+
+void stlinkv2::writeMDR_ADR(quint32 value)
+{
+    PrintFuncName();
+    QByteArray buf;
+    uchar endian_buf[4];
+    const quint32 addr = mDevice->value("CNTRL_ADR");
+    qToLittleEndian(value, endian_buf);
+    buf.append((const char*)endian_buf, sizeof(endian_buf));
+    this->writeMem32(addr,  buf);
+}
+
+void stlinkv2::writeMDR_DI(quint32 value)
+{
+    PrintFuncName();
+    QByteArray buf;
+    uchar endian_buf[4];
+    const quint32 addr = mDevice->value("CNTRL_DI");
+    qToLittleEndian(value, endian_buf);
+    buf.append((const char*)endian_buf, sizeof(endian_buf));
+    this->writeMem32(addr,  buf);
 }
 
 quint32 stlinkv2::readMDR_KEY()

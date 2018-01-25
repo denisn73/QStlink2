@@ -90,6 +90,7 @@ public slots:
      * @return bool
      */
     bool connect();
+    bool test();
     /**
      * @brief
      *
@@ -163,6 +164,7 @@ private:
     QString mUsername; /**< TODO: describe */
     quint32 mLastAction; /**< TODO: describe */
 
+    void massErase(uint8_t bank);
 private slots:
     /**
      * @brief

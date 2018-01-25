@@ -38,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
         this->log(QString::number(mDevices->getDevicesCount())+" Device descriptions loaded.");
         QObject::connect(mUi->b_quit,SIGNAL(clicked()),this,SLOT(quit()));
         QObject::connect(mUi->b_connect, SIGNAL(clicked()), this, SLOT(connect()));
+        QObject::connect(mUi->b_test, SIGNAL(clicked()), this, SLOT(test()));
         QObject::connect(mUi->b_disconnect, SIGNAL(clicked()), this, SLOT(disconnect()));
         QObject::connect(mUi->b_send, SIGNAL(clicked()), this, SLOT(send()));
         QObject::connect(mUi->b_receive, SIGNAL(clicked()), this, SLOT(receive()));
@@ -363,10 +364,189 @@ void MainWindow::hardReset()
     mStlink->hardResetMCU();
     QThread::msleep(100);
     this->getStatus();
-    this->log("readMDR_CMD: " + QString::number(mStlink->readMDR_EEPROM_CMD()));
-    mStlink->writeMDR_EEPROM_KEY();
-    this->log("readMDR_KEY: " + QString::number(mStlink->readMDR_EEPROM_KEY()));
 
+}
+
+void MainWindow::massErase(uint8_t bank)
+{
+    uint32_t tmpCMD = 0;
+    QByteArray buffer;
+
+    if(bank>3) return;
+
+    // Записываем ключ в регистр EEPROM_KEY
+    mStlink->writeMDR_EEPROM_KEY();
+
+    // читаем регистр EEPROM_CMD
+    tmpCMD = mStlink->readMDR_EEPROM_CMD();
+
+    // Устанавливаем бит CON для режима программирования
+    tmpCMD |= mStlink->mDevice->value("CMD_CON");
+    mStlink->writeMDR_EEPROM_CMD(tmpCMD);
+
+    // устанавливаем банк памяти
+    mStlink->writeMDR_EEPROM_ADR(bank<<2);
+
+    // Устанавливаем бит CON для режима программирования
+    tmpCMD |= mStlink->mDevice->value("CMD_XE");
+    tmpCMD |= mStlink->mDevice->value("CMD_MAS1");
+    tmpCMD |= mStlink->mDevice->value("CMD_ERASE");
+    mStlink->writeMDR_EEPROM_CMD(tmpCMD);
+
+
+    tmpCMD |= mStlink->mDevice->value("CMD_NVSTR");
+    mStlink->writeMDR_EEPROM_CMD(tmpCMD);
+
+    QThread::msleep(40);
+
+    tmpCMD &= ~mStlink->mDevice->value("CMD_ERASE");
+    mStlink->writeMDR_EEPROM_CMD(tmpCMD);
+
+    QThread::msleep(1);
+
+    tmpCMD &= ~mStlink->mDevice->value("CMD_XE");
+    tmpCMD &= ~mStlink->mDevice->value("CMD_MAS1");
+    tmpCMD &= ~mStlink->mDevice->value("CMD_NVSTR");
+    mStlink->writeMDR_EEPROM_CMD(tmpCMD);
+
+}
+
+bool MainWindow::test()
+{
+
+    this->massErase(0);
+    this->massErase(1);
+    this->massErase(2);
+    this->massErase(3);
+
+    uint32_t tmpCMD = 0;
+    uint32_t tmp = 0;
+    uint32_t addr = mStlink->mDevice->value("flash_base")+4;
+    const uint32_t buf_size = 4;
+    QByteArray buffer;
+
+    // Читаем первый адрес
+    mStlink->readMem32(&buffer, addr, buf_size);
+    tmp = qFromLittleEndian<quint32>((uchar*)buffer.constData());
+    buffer.clear();
+    this->log("read first addr: " + QString::number(tmp));
+
+    this->hardReset();
+
+    // Записываем ключ в регистр EEPROM_KEY
+    mStlink->writeMDR_EEPROM_KEY();
+
+    QThread::msleep(1);
+
+    // читаем регистр EEPROM_CMD
+    tmpCMD = mStlink->readMDR_EEPROM_CMD();
+    this->log("readMDR_CMD: " + QString::number(tmpCMD));
+
+    // Устанавливаем бит CON для режима программирования
+    tmpCMD |= mStlink->mDevice->value("CMD_CON");
+    this->log("writeMDR_CMD: " + QString::number(tmpCMD));
+    mStlink->writeMDR_EEPROM_CMD(tmpCMD);
+
+    QThread::msleep(1);
+
+    // читаем регистр EEPROM_CMD
+    tmpCMD = mStlink->readMDR_EEPROM_CMD();
+    this->log("readMDR_CMD[CON]: " + QString::number(tmpCMD));
+
+    // устанавливаем адрес для записи (первый адрес)
+    mStlink->writeMDR_EEPROM_ADR(addr);
+
+    QThread::msleep(1);
+
+    // устанавливаем записываемое слово
+    static uint32_t vMem = 0;
+    mStlink->writeMDR_EEPROM_DI(10);
+
+    QThread::msleep(1);
+
+    // устанавливаем биты XE и PROG в регистре EEPROM_CMD
+    tmpCMD |= mStlink->mDevice->value("CMD_XE");
+    tmpCMD |= mStlink->mDevice->value("CMD_PROG");
+    mStlink->writeMDR_EEPROM_CMD(tmpCMD);
+
+    QThread::msleep(1);
+
+    // читаем регистр EEPROM_CMD
+    tmpCMD = mStlink->readMDR_EEPROM_CMD();
+    this->log("readMDR_CMD[XE & PROG]: " + QString::number(tmpCMD));
+
+    // устанавливаем бит NVSTR в регистре EEPROM_CMD для начала записи
+    tmpCMD |= mStlink->mDevice->value("CMD_NVSTR");
+    mStlink->writeMDR_EEPROM_CMD(tmpCMD);
+
+    QThread::msleep(1);
+
+    // читаем регистр EEPROM_CMD
+    tmpCMD = mStlink->readMDR_EEPROM_CMD();
+    this->log("readMDR_CMD[NVSTR]: " + QString::number(tmpCMD));
+
+    // устанавливаем бит YE в регистре EEPROM_CMD для разрешения выдачи адреса
+    tmpCMD |= mStlink->mDevice->value("CMD_YE");
+    mStlink->writeMDR_EEPROM_CMD(tmpCMD);
+
+
+    // читаем регистр EEPROM_CMD
+    tmpCMD = mStlink->readMDR_EEPROM_CMD();
+    this->log("readMDR_CMD[YE]: " + QString::number(tmpCMD));
+
+    // обнуляем бит YE
+    tmpCMD &= ~mStlink->mDevice->value("CMD_YE");
+    mStlink->writeMDR_EEPROM_CMD(tmpCMD);
+
+
+    // читаем регистр EEPROM_CMD
+    tmpCMD = mStlink->readMDR_EEPROM_CMD();
+    this->log("readMDR_CMD[~YE]: " + QString::number(tmpCMD));
+
+    // обнуляем бит PROG
+    tmpCMD &= ~mStlink->mDevice->value("CMD_PROG");
+    mStlink->writeMDR_EEPROM_CMD(tmpCMD);
+
+
+    // читаем регистр EEPROM_CMD
+    tmpCMD = mStlink->readMDR_EEPROM_CMD();
+    this->log("readMDR_CMD[~PROG]: " + QString::number(tmpCMD));
+
+    // обнуляем биты XE и NVSTR
+    tmpCMD &= ~mStlink->mDevice->value("CMD_XE");
+    tmpCMD &= ~mStlink->mDevice->value("CMD_NVSTR");
+    mStlink->writeMDR_EEPROM_CMD(tmpCMD);
+
+    QThread::msleep(1);
+
+    // читаем регистр EEPROM_CMD
+    tmpCMD = mStlink->readMDR_EEPROM_CMD();
+    this->log("readMDR_CMD[~XE & ~NVSTR]: " + QString::number(tmpCMD));
+
+    // Обнуляем бит CON для выхода из режима программирования
+    tmpCMD &= ~mStlink->mDevice->value("CMD_CON");
+    this->log("writeMDR_CMD: " + QString::number(tmpCMD));
+    mStlink->writeMDR_EEPROM_CMD(tmpCMD);
+
+    QThread::msleep(1);
+
+    // читаем регистр EEPROM_CMD
+    tmpCMD = mStlink->readMDR_EEPROM_CMD();
+    this->log("readMDR_CMD[~CON]: " + QString::number(tmpCMD));
+
+    this->hardReset();
+
+    // читаем регистр EEPROM_CMD
+    tmpCMD = mStlink->readMDR_EEPROM_CMD();
+    this->log("readMDR_CMD: " + QString::number(tmpCMD));
+
+    // Читаем первый адрес
+    mStlink->readMem32(&buffer, addr, buf_size);
+    tmp = qFromLittleEndian<quint32>((uchar*)buffer.constData());
+    buffer.clear();
+    this->log("read first addr: " + QString::number(tmp));
+
+    return false;
 }
 
 void MainWindow::setModeJTAG()

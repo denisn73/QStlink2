@@ -78,7 +78,7 @@
       <CMD_DELAY>0x8</CMD_DELAY>
       <CMD_RD>0x4</CMD_RD>
       <CMD_WR>0x2</CMD_WR>
-      <CMD_CON>0x0</CMD_CON>
+      <CMD_CON>0x1</CMD_CON>
     </device>
 
     <device type="STM32L03xx" coretype="CM0+">
