@@ -320,6 +320,14 @@ quint32 stlinkv2::readMDR_EEPROM_KEY() {
     return readMDR_KEY();
 }
 
+void stlinkv2::writeMDR_EEPROM_KEY() {
+    return writeMDR_KEY();
+}
+
+void stlinkv2::resetMDR_EEPROM_KEY() {
+    return resetMDR_KEY();
+}
+
 void stlinkv2::writeMDR_EEPROM_CMD(quint32 value) {
     return writeMDR_CMD(value);
 }
@@ -332,11 +340,9 @@ void stlinkv2::writeMDR_EEPROM_DI(quint32 value) {
     return writeMDR_DI(value);
 }
 
-void stlinkv2::writeMDR_EEPROM_KEY() {
-    return writeMDR_KEY();
+void stlinkv2::initMDR() {
+    return initMDR_CLK();
 }
-
-
 
 void stlinkv2::runMCU()
 {
@@ -500,6 +506,37 @@ quint32 stlinkv2::readFlashSR()
     return res;
 }
 
+void stlinkv2::initMDR_CLK() {
+
+    QByteArray buf;
+    uchar endian_buf[4];
+    quint32 addr;
+
+    // Enable all CLK
+    addr = mDevice->value("PER_CLOCK");
+    qToLittleEndian(0xFFFFFFFF, endian_buf);
+    buf.append((const char*)endian_buf, sizeof(endian_buf));
+    this->writeMem32(addr,  buf);
+
+    // Disable all interrupts
+    this->writeMem32(0xE000E180,  buf);
+
+    buf.clear();
+
+    addr = mDevice->value("HS_CONTROL");
+    qToLittleEndian(0x1, endian_buf);
+    buf.append((const char*)endian_buf, sizeof(endian_buf));
+    this->writeMem32(addr,  buf);
+
+    buf.clear();
+
+    addr = mDevice->value("CPU_CLOCK");
+    qToLittleEndian(0x0, endian_buf);
+    buf.append((const char*)endian_buf, sizeof(endian_buf));
+    this->writeMem32(addr,  buf);
+
+}
+
 quint32 stlinkv2::readMDR_CMD()
 {
     //PrintFuncName();
@@ -562,6 +599,16 @@ void stlinkv2::writeMDR_KEY() {
     uchar endian_buf[4];
     const quint32 addr = mDevice->value("CNTRL_KEY");
     qToLittleEndian(mDevice->value("EEPROM_KEY"), endian_buf);
+    buf.append((const char*)endian_buf, sizeof(endian_buf));
+    this->writeMem32(addr,  buf);
+}
+
+void stlinkv2::resetMDR_KEY() {
+    PrintFuncName();
+    QByteArray buf;
+    uchar endian_buf[4];
+    const quint32 addr = mDevice->value("CNTRL_KEY");
+    qToLittleEndian(0, endian_buf);
     buf.append((const char*)endian_buf, sizeof(endian_buf));
     this->writeMem32(addr,  buf);
 }

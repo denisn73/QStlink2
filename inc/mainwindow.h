@@ -83,6 +83,7 @@ public:
     ~MainWindow();
     transferThread *mTfThread; /**< TODO: describe */
 
+    void programmPage(unsigned long adr, unsigned long sz, uint32_t *buf);
 public slots:
     /**
      * @brief
@@ -164,7 +165,8 @@ private:
     QString mUsername; /**< TODO: describe */
     quint32 mLastAction; /**< TODO: describe */
 
-    void massErase(uint8_t bank);
+    void massErase();
+
 private slots:
     /**
      * @brief

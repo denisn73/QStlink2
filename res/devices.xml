@@ -60,6 +60,10 @@
       <flash_int_reg>0x40022000</flash_int_reg>
       <buffer_size>0x4000</buffer_size>
       <loader>loader_f1.bin</loader>
+      <CLK_STATUS>0x40020000</CLK_STATUS>
+      <HS_CONTROL>0x40020008</HS_CONTROL>
+      <CPU_CLOCK>0x4002000C</CPU_CLOCK>
+      <PER_CLOCK>0x4002001C</PER_CLOCK>
       <EEPROM_CNTRL>0x40018000</EEPROM_CNTRL>
       <EEPROM_KEY>0x08AAA5551</EEPROM_KEY>
       <CNTRL_CMD>0x40018000</CNTRL_CMD>
